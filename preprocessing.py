@@ -3,7 +3,7 @@ import sys,argparse,re,os
 from stanfordnlp.corenlp import *
 from common.AMRGraph import *
 from pprint import pprint
-import cPickle as pickle
+import pickle as pickle
 from Aligner import Aligner
 from common.SpanGraph import SpanGraph
 from depparser import CharniakParser,StanfordDepParser,ClearDepParser,TurboDepParser, MateDepParser
@@ -117,7 +117,7 @@ def _write_tok_amr(file_path,amr_file,instances):
         comment_list.append(origin_comment_string)
         amr_list.append(origin_amr_string)
 
-    for i in xrange(len(instances)):
+    for i in range(len(instances)):
         output_tok.write(comment_list[i])
         output_tok.write("# ::tok %s\n" % (' '.join(instances[i].get_tokenized_sent())))
         output_tok.write(amr_list[i])
@@ -313,10 +313,10 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
         # preprocess 1: tokenization, POS tagging and name entity using Stanford CoreNLP
 
         if START_SNLP and not os.path.exists(tmp_prp_filename):
-            print >> log, "Start Stanford CoreNLP..."
+            print("Start Stanford CoreNLP...", file=log)
             proc1.setup()
 
-        print >> log, 'Read token,lemma,name entity file %s...' % (tmp_prp_filename)            
+        print('Read token,lemma,name entity file %s...' % (tmp_prp_filename), file=log)            
         instances = proc1.parse(tmp_sent_filename)
 
         tok_sent_filename = tmp_sent_filename+'.tok' # write tokenized sentence file
@@ -328,7 +328,7 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
             _write_tok_amr(tok_amr_filename,amr_file,instances)
             
         SpanGraph.graphID = 0
-        for i in xrange(len(instances)):
+        for i in range(len(instances)):
 
             amr = AMR.parse_string(amr_strings[i])
             if 'alignments' in comments[i]:
@@ -359,11 +359,11 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
 
         # preprocess 1: tokenization, POS tagging and name entity using Stanford CoreNLP
         if START_SNLP and not os.path.exists(tmp_prp_filename):
-            print >> log, "Start Stanford CoreNLP ..."
+            print("Start Stanford CoreNLP ...", file=log)
             proc1.setup()
             instances = proc1.parse(tmp_sent_filename)
         elif os.path.exists(tmp_prp_filename): # found cache file
-            print >> log, 'Read token,lemma,name entity file %s...' % (tmp_prp_filename)
+            print('Read token,lemma,name entity file %s...' % (tmp_prp_filename), file=log)
             instances = proc1.parse(tmp_sent_filename)
         else:
             raise Exception('No cache file %s has been found. set START_SNLP=True to start corenlp.' % (tmp_prp_filename))
@@ -372,7 +372,7 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
         if not os.path.exists(tok_sent_filename):
             _write_tok_sentences(tok_sent_filename,instances)
             
-        for i in xrange(len(instances)):
+        for i in range(len(instances)):
             instances[i].addComment(comments[i])
         
     else:        # input file is sentence
@@ -383,11 +383,11 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
 
         # preprocess 1: tokenization, POS tagging and name entity using Stanford CoreNLP
         if START_SNLP and not os.path.exists(tmp_prp_filename):
-            print >> log, "Start Stanford CoreNLP ..."
+            print("Start Stanford CoreNLP ...", file=log)
             proc1.setup()
             instances = proc1.parse(tmp_sent_filename)
         elif os.path.exists(tmp_prp_filename): # found cache file
-            print >> log, 'Read token,lemma,name entity file %s...' % (tmp_prp_filename)
+            print('Read token,lemma,name entity file %s...' % (tmp_prp_filename), file=log)
             instances = proc1.parse(tmp_sent_filename)
         else:
             raise Exception('No cache file %s has been found. set START_SNLP=True to start corenlp.' % (tmp_prp_filename))
@@ -401,7 +401,7 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
     if constants.FLAG_DEPPARSER == "stanford":
         dep_filename = tok_sent_filename+'.stanford.dep'
         if os.path.exists(dep_filename):
-            print 'Read dependency file %s...' % (dep_filename)                                                                 
+            print('Read dependency file %s...' % (dep_filename))                                                                 
             dep_result = codecs.open(dep_filename,'r',encoding='utf-8').read()
         else:
             dparser = StanfordDepParser()
@@ -414,7 +414,7 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
     elif constants.FLAG_DEPPARSER == "stanfordConvert":
         dep_filename = tok_sent_filename+'.stanford.parse.dep'
         if os.path.exists(dep_filename):
-            print 'Read dependency file %s...' % (dep_filename)
+            print('Read dependency file %s...' % (dep_filename))
 
             dep_result = codecs.open(dep_filename,'r',encoding='utf-8').read()
         else:
@@ -433,14 +433,14 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
             dparser = CharniakParser()
             dparser.parse(tok_sent_filename)
             #raise IOError('Converted dependency file %s not founded' % (dep_filename))
-        print 'Read dependency file %s...' % (dep_filename)
+        print('Read dependency file %s...' % (dep_filename))
         dep_result = codecs.open(dep_filename,'r',encoding='utf-8').read()
         _add_dependency(instances,dep_result,constants.FLAG_DEPPARSER)
             
     elif constants.FLAG_DEPPARSER == "clear":
         dep_filename = tok_sent_filename+'.clear.dep'
         if os.path.exists(dep_filename):
-            print 'Read dependency file %s...' % (dep_filename)                                                                 
+            print('Read dependency file %s...' % (dep_filename))                                                                 
             dep_result = open(dep_filename,'r').read()
         else:
             dparser = ClearDepParser()
@@ -450,7 +450,7 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
     elif constants.FLAG_DEPPARSER == "turbo":
         dep_filename = tok_sent_filename+'.turbo.dep'
         if os.path.exists(dep_filename):
-            print 'Read dependency file %s...' % (dep_filename)                                                                 
+            print('Read dependency file %s...' % (dep_filename))                                                                 
             dep_result = open(dep_filename,'r').read()
         else:
             dparser = TurboDepParser()
@@ -460,7 +460,7 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
     elif constants.FLAG_DEPPARSER == "mate":
         dep_filename = tok_sent_filename+'.mate.dep'
         if os.path.exists(dep_filename):
-            print 'Read dependency file %s...' % (dep_filename)                                                                 
+            print('Read dependency file %s...' % (dep_filename))                                                                 
             dep_result = open(dep_filename,'r').read()
         else:
             dparser = MateDepParser()
@@ -471,7 +471,7 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
         raise Exception('Unknown dependency parse type %s' % (constants.FLAG_DEPPARSER))
     
     if constants.FLAG_PROP:
-        print >> log, "Adding SRL information..."
+        print("Adding SRL information...", file=log)
         prop_filename = tok_sent_filename + '.prop' if constants.FLAG_ONTO != 'onto+bolt' else tok_sent_filename + '.onto+bolt.prop'
         if os.path.exists(prop_filename):
             if constants.FLAG_DEPPARSER == "stdconv+charniak":
@@ -483,7 +483,7 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
             raise IOError('Semantic role labeling file %s not found!' % (prop_filename))
 
     if constants.FLAG_RNE:
-        print >> log, "Using rich name entity instead..."
+        print("Using rich name entity instead...", file=log)
         rne_filename = tok_sent_filename + '.rne'
         if os.path.exists(rne_filename):
             _substitute_rne(instances, rne_filename)

@@ -66,3 +66,7 @@ scripts/*~
 *.gz
 *.zip
 log/
+
+# models
+amr-anno-1.0
+examples

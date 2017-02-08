@@ -12,10 +12,10 @@ import pywintypes
 import itertools
 import random
 
-from Queue import Queue, Empty
+from queue import Queue, Empty
 from threading import Thread
 
-from pexpect import spawn, ExceptionPexpect, EOF, TIMEOUT
+from .pexpect import spawn, ExceptionPexpect, EOF, TIMEOUT
 from subprocess import list2cmdline
 
 from msvcrt import open_osfhandle
@@ -48,7 +48,7 @@ try:
     from collections import namedtuple
 except ImportError:
     def namedtuple(name, fields):
-        d = dict(zip(fields, [None]*len(fields)))
+        d = dict(list(zip(fields, [None]*len(fields))))
         return type(name, (object,), d)
 
 # Compatbility wiht Python 3
@@ -68,7 +68,7 @@ def split_command_line(cmdline):
     """Split a command line into a command and its arguments according to
     the rules of the Microsoft C runtime."""
     # http://msdn.microsoft.com/en-us/library/ms880421
-    s_free, s_in_quotes, s_in_escape = range(3)
+    s_free, s_in_quotes, s_in_escape = list(range(3))
     state = namedtuple('state',
                 ('current', 'previous', 'escape_level', 'argument'))
     state.current = s_free
@@ -121,7 +121,7 @@ def split_command_line(cmdline):
                 state.current = state.previous
                 state.previous = s_in_escape
     if state.current != s_free:
-        raise ValueError, 'Illegal command line.'
+        raise ValueError('Illegal command line.')
     return result
 
 
@@ -160,10 +160,10 @@ def _parse_header(header):
         if p1 == -1:
             if line.startswith(' '):  # Continuation
                 if key is None:
-                    raise ValueError, 'Continuation on first line.'
+                    raise ValueError('Continuation on first line.')
                 input[key] += '\n' + line[1:]
             else:
-                raise ValueError, 'Expecting key=value format'
+                raise ValueError('Expecting key=value format')
         key = line[:p1]
         parsed[key] = line[p1+1:]
     return parsed
@@ -216,12 +216,12 @@ def _create_named_pipe(template, sids=None):
             pipe = CreateNamedPipe(name, PIPE_ACCESS_DUPLEX,
                                    0, 1, 1, 1, 100000, sattrs)
             SetHandleInformation(pipe, HANDLE_FLAG_INHERIT, 0)
-        except WindowsError, e:
+        except WindowsError as e:
             if e.winerror != ERROR_PIPE_BUSY:
                 raise
         else:
             return pipe, name
-    raise ExceptionPexpect, 'Could not create pipe after 100 attempts.'
+    raise ExceptionPexpect('Could not create pipe after 100 attempts.')
 
 
 def _stub(cmd_name, stdin_name, stdout_name, stderr_name):
@@ -267,7 +267,7 @@ def _stub(cmd_name, stdin_name, stdout_name, stderr_name):
         res = CreateProcess(input['command'], input['args'], sattrs, None,
                             True, CREATE_NEW_CONSOLE, os.environ, os.getcwd(),
                             startupinfo)
-    except WindowsError, e:
+    except WindowsError as e:
         message = _quote_header(str(e))
         WriteFile(cmd_pipe, 'status=error\nmessage=%s\n\n' % message)
         ExitProcess(3)
@@ -366,7 +366,7 @@ class winspawn(spawn):
         self.args = args
         command = which(self.command)
         if command is None:
-            raise ExceptionPexpect, 'Command not found: %s' % self.command
+            raise ExceptionPexpect('Command not found: %s' % self.command)
         args = join_command_line(self.args)
 
         # Create the pipes
@@ -420,7 +420,7 @@ class winspawn(spawn):
         if output['status'] != 'ok':
             m = 'Child did not start up correctly. '
             m += output.get('message', '')
-            raise ExceptionPexpect, m
+            raise ExceptionPexpect(m)
         self.pid = int(output['pid'])
         self.child_handle = OpenProcess(PROCESS_ALL_ACCESS, False, self.pid)
         WaitForSingleObject(child_handle, INFINITE)
@@ -445,7 +445,7 @@ class winspawn(spawn):
             return
         try:
             TerminateProcess(self.child_handle, 1)
-        except WindowsError, e:
+        except WindowsError as e:
             # ERROR_ACCESS_DENIED (also) happens when the child has already
             # exited.
             if e.winerror == ERROR_ACCESS_DENIED and not self.isalive():
@@ -484,7 +484,7 @@ class winspawn(spawn):
             timeout = 1000 * timeout
         ret = WaitForSingleObject(self.child_handle, timeout)
         if ret == WAIT_TIMEOUT:
-            raise TIMEOUT, 'Timeout exceeded in wait().'
+            raise TIMEOUT('Timeout exceeded in wait().')
         self.exitstatus = GetExitCodeProcess(self.child_handle)
         return self.exitstatus
 
@@ -500,7 +500,7 @@ class winspawn(spawn):
 
     def kill(self, signo):
         """Send a signal to the child (not available on Windows)."""
-        raise ExceptionPexpect, 'Signals are not availalbe on Windows'
+        raise ExceptionPexpect('Signals are not availalbe on Windows')
 
     def _child_reader(self, handle):
         """INTERNAL: Reader thread that reads stdout/stderr of the child
@@ -510,7 +510,7 @@ class winspawn(spawn):
             try:
                 err, data = ReadFile(handle, self.maxread)
                 assert err == 0  # not expecting error w/o overlapped io
-            except WindowsError, e:
+            except WindowsError as e:
                 if e.winerror == ERROR_BROKEN_PIPE:
                     status = 'eof'
                     data = ''
@@ -540,15 +540,15 @@ class winspawn(spawn):
         try:    
             handle, status, data = self.child_output.get(timeout=timeout)
         except Empty:
-            raise TIMEOUT, 'Timeout exceeded in read_nonblocking().'
+            raise TIMEOUT('Timeout exceeded in read_nonblocking().')
         if status == 'data':
             self.chunk_buffer.add(data)
         elif status == 'eof':
             self._set_eof(handle)
-            raise EOF, 'End of file in read_nonblocking().'
+            raise EOF('End of file in read_nonblocking().')
         elif status == 'error':
             self._set_eof(handle)
-            raise OSError, data
+            raise OSError(data)
         buf = self.chunk_buffer.read(size)
         if self.logfile is not None:
             self.logfile.write(buf)

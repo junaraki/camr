@@ -299,11 +299,11 @@ def DoOperator (fsm):
         fsm.memory.append (al / ar)
 
 def DoEqual (fsm):
-    print(str(fsm.memory.pop()))
+    print((str(fsm.memory.pop())))
 
 def Error (fsm):
     print('That does not compute.')
-    print(str(fsm.input_symbol))
+    print((str(fsm.input_symbol)))
 
 def main():
 

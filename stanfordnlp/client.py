@@ -2,7 +2,7 @@
     serves as the wrapper
 """
 
-from corenlp import *
+from .corenlp import *
 import json
 from pprint import pprint
 '''

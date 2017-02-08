@@ -19,13 +19,13 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import json, optparse, os, re, sys, time, traceback, subprocess
-import jsonrpc, pexpect
+from . import jsonrpc, pexpect
 import subprocess
-from progressbar import ProgressBar, Fraction
-from unidecode import unidecode
+from .progressbar import ProgressBar, Fraction
+from .unidecode import unidecode
 from nltk.tree import Tree
 import re
-from data import Data
+from .data import Data
 
 VERBOSE = True
 STATE_START, STATE_TEXT, STATE_WORDS, STATE_TREE, STATE_DEPENDENCY, STATE_COREFERENCE = 0, 1, 2, 3, 4, 5
@@ -87,8 +87,8 @@ def parse_parser_results(text):
             for s in WORD_PATTERN.findall(line):
                 t = parse_bracketed(s)
                 if t[0] == '': continue
-                data.addToken(t[0], t[1][u'CharacterOffsetBegin'], t[1][u'CharacterOffsetEnd'],
-                              t[1][u'Lemma'],t[1][u'PartOfSpeech'],t[1][u'NamedEntityTag'])
+                data.addToken(t[0], t[1]['CharacterOffsetBegin'], t[1]['CharacterOffsetEnd'],
+                              t[1]['Lemma'],t[1]['PartOfSpeech'],t[1]['NamedEntityTag'])
             state = STATE_TREE
             parsed = []
         
@@ -188,13 +188,13 @@ class StanfordCoreNLP(object):
         jars = [corenlp_path + jar for jar in jars]
         for jar in jars:
             if not os.path.exists(jar):
-                print "Error! Cannot locate %s" % jar
+                print("Error! Cannot locate %s" % jar)
                 sys.exit(1)
 
         #Change from ':' to ';'
         # spawn the server
         start_corenlp = "%s -Xmx2500m -cp %s %s %s" % (java_path, ':'.join(jars), classname, props)
-        if VERBOSE: print start_corenlp
+        if VERBOSE: print(start_corenlp)
         self.corenlp = pexpect.spawn(start_corenlp)
         
         # show progress bar while loading the models
@@ -239,12 +239,12 @@ class StanfordCoreNLP(object):
         while True:
             # Time left, read more data
             try:
-                incoming += self.corenlp.read_nonblocking(40000, 1800)
+                incoming += self.corenlp.read_nonblocking(40000, 1800).decode('utf-8')
                 if "\nNLP>" in incoming: break
                 time.sleep(0.0001)
             except pexpect.TIMEOUT:
                 if end_time - time.time() < 0:
-                    print "[ERROR] Timeout"
+                    print("[ERROR] Timeout")
                     return {'error': "timed out after %f seconds" % max_expected_time,
                             'input': text,
                             'output': incoming}
@@ -253,7 +253,7 @@ class StanfordCoreNLP(object):
             except pexpect.EOF:
                 break
         
-        if VERBOSE: print "%s\n%s" % ('='*40, repr(incoming))
+        if VERBOSE: print("%s\n%s" % ('='*40, repr(incoming)))
         return incoming
 
     '''
@@ -323,8 +323,8 @@ class StanfordCoreNLP(object):
                 
                 try:
                     data = parse_parser_results(result)
-                except Exception, e:
-                    if VERBOSE: print traceback.format_exc()
+                except Exception as e:
+                    if VERBOSE: print(traceback.format_exc())
                     raise e
 
                 instances.append(data)
@@ -340,8 +340,8 @@ class StanfordCoreNLP(object):
                 output_prp.write("%s\n%s"%('-'*40,result))
                 try:
                     data = parse_parser_results(result)
-                except Exception, e:
-                    if VERBOSE: print traceback.format_exc()
+                except Exception as e:
+                    if VERBOSE: print(traceback.format_exc())
                     raise e
 
                 instances.append(data)
@@ -386,7 +386,7 @@ if __name__ == '__main__':
         nlp = StanfordCoreNLP()
         server.register_function(nlp.parse)
         
-        print 'Serving on http://%s:%s' % (options.host, options.port)
+        print('Serving on http://%s:%s' % (options.host, options.port))
         server.serve()
     else:
         popen = subprocess.Popen(['netstat', '-nao'],
@@ -397,10 +397,10 @@ if __name__ == '__main__':
 ##        pattern = "^\s+TCP.*" + options.port + ".*(?P<pid>[0-9]*)\s+$"
         pattern = "^\s+TCP.*"+ options.port + ".*\s(?P<pid>\d+)\s*$"
         prog = re.compile(pattern)
-        print pattern
+        print(pattern)
         for line in data.split('\n'):
             match = re.match(prog, line)
             if match:
                 pid = match.group('pid')
-                print pid
+                print(pid)
                 subprocess.Popen(['taskkill', '/PID', pid, '/F'])

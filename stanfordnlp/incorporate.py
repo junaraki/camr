@@ -1,7 +1,7 @@
 import incorporate_util as iu
 import re
 from pprint import pprint
-from util.py import find_abr_fullname, find_query_fullname
+from .util.py import find_abr_fullname, find_query_fullname
 source_port = '8000'
 source_tv_handle = 'tvrh'
 dump_port = '8001'
@@ -121,8 +121,8 @@ def get_candidate (query):
             dis_e_items = iu.parse_source_result ( dis_exac_parsed )
             
             if len(dis_e_items) > 0:
-                print dis_exac_link
-                print wiki_standard(candidates_dict[t])
+                print(dis_exac_link)
+                print(wiki_standard(candidates_dict[t]))
             for item in dis_e_items:
                 pprint(item['title'])
                 candidates['disam'].append({'title': item['title'], 'tv': item['term_vector'], 'support' : aux_dict[t]} )

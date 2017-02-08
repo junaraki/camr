@@ -295,7 +295,7 @@ class spawn(object):
                 # If stdout has been replaced, it may not have .buffer
                 return sys.stdout.write(b.decode('ascii', 'replace'))
     else:
-        allowed_string_types = (basestring,)  # analysis:ignore
+        allowed_string_types = (str,)  # analysis:ignore
         _chr = staticmethod(chr)
         linesep = os.linesep
         crlf = '\r\n'
@@ -1771,9 +1771,9 @@ class spawnu(spawn):
         linesep = os.linesep
         crlf = '\r\n'
     else:
-        string_type = unicode
-        allowed_string_types = (unicode, )
-        _chr = staticmethod(unichr)
+        string_type = str
+        allowed_string_types = (str, )
+        _chr = staticmethod(chr)
         linesep = os.linesep.decode('ascii')
         crlf = '\r\n'.decode('ascii')
     # This can handle unicode in both Python 2 and 3

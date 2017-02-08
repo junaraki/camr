@@ -2,7 +2,7 @@
    tools to process the documents
 """
 from nltk.tokenize import word_tokenize, wordpunct_tokenize, sent_tokenize
-from find_ne import find_ne
+from .find_ne import find_ne
 from pprint import pprint
 import re
 import string
@@ -77,7 +77,7 @@ def find_query_fullname(doc,query):
     entities = find_ne(doc)
     #pprint(entities)
     q = normalize(query)
-    print q
+    print(q)
     result = []
     for tok in q:
         for en in entities:
@@ -102,10 +102,10 @@ if __name__== "__main__":
     #            test_doc += l.strip()
     test_doc = re.sub('<[^<]+?>','',test_doc)
     test_doc = re.sub('[\r\n]+',' ',test_doc)
-    print test_doc
+    print(test_doc)
 
-    print "Example 1: find full name for CANA, abbreviation stuff..."
-    print find_abr_fullname(test_doc,test_abr,2)
+    print("Example 1: find full name for CANA, abbreviation stuff...")
+    print(find_abr_fullname(test_doc,test_abr,2))
 
-    print "find query full name for Columbia, non-abbr..."
-    print find_query_fullname(test_doc,test_query)
+    print("find query full name for Columbia, non-abbr...")
+    print(find_query_fullname(test_doc,test_query))

@@ -1,5 +1,5 @@
 import json, re
-from jsonrpc import ServerProxy, JsonRpc20, TransportTcpIp
+from .jsonrpc import ServerProxy, JsonRpc20, TransportTcpIp
 from pprint import pprint
 
 class StanfordNLP:

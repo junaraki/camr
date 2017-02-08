@@ -7,7 +7,7 @@
 from common.util import *
 from collections import deque
 import copy
-import cPickle
+import pickle
 
 class ActionError(Exception):
     pass
@@ -69,7 +69,7 @@ class Newstate(object):
         return Newstate(sigma,delta,beta,A)        
     
     def pcopy(self):
-        return cPickle.loads(cPickle.dumps(self,-1))
+        return pickle.loads(pickle.dumps(self,-1))
 
     def is_terminal(self):
         return self.beta.isEmpty()
